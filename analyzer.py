@@ -1,32 +1,12 @@
-# A proof of concept prototype to use pyparsing to parse common rust pitfalls
+# A proof of concept prototype to use pyparsing to parse common rust pitfalls.
+# Usage: python3 analyzer.py -f FILENAME.
 
 from optparse import OptionParser
 from pyparsing import *
 
-code_example = """
-let FEE: u32 = 1000; 
 
-fn withdraw_token(program_id: &Pubkey, accounts: &[AccountInfo], amount: u32) -> ProgramResult {
-
-    // ...
-    // deserialize & validate user and vault accounts
-    // ...
-    
-    if amount + FEE > vault.user_balance[user_id] {
-        return Err(ProgramError::AttemptToWithdrawTooMuch);
-    }
-    
-    // ...
-    // Transfer `amount` many tokens from vault to user-controlled account ...
-    // ...
-    
-    Ok(())
-}
-"""
-
-
-def overUnderFlowCheck(content: str):
-    variable = Word(alphas)
+def overUnderFlowCheck(content: str) -> None:
+    variable = Word(alphanums)
     arith_op = oneOf("+ - * /")
     equation = variable + arith_op + variable
     equation.ignore(cppStyleComment)
@@ -48,4 +28,6 @@ if __name__ == "__main__":
 
     with open(options.filename, "r") as f:
         content = f.read()
+
+        # do checks
         overUnderFlowCheck(content)
