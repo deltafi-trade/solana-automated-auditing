@@ -1,6 +1,7 @@
-# deltafi-audit-tool
-
-A simple solana semantic parsing and detaction tool 
+# A Community Driven Solana Auditing Tool
+#### Open source
+#### Free
+#### Built by and for the Solana community
 
 ### How to add a new cases
 
