@@ -2,10 +2,9 @@
 
 A simple solana semantic parsing and detaction tool 
 
-### Milestones
+### How to add a new cases
 
-* Detect solana common [pitfalls](https://blog.neodyme.io/posts/solana_common_pitfalls) give a file
-* Generate a report for given a git repo
-* Modularize logic for communicy to contribution
-* Support penatration testing (like POC Framework)
++ Add handle function in to store information needed in `models.py`
++ Associate the handle function with a parser in `parser.py`
++ Add a checker to implement check logic using newly added information in `models.py` 
 
