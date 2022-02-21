@@ -1,4 +1,5 @@
-from solaudit.matchers import *
+from solaudit.parsers import *
+from solaudit.models import Program
 
 
 def test_comment():
@@ -14,14 +15,6 @@ def test_name():
     assert name.parseString("abc_123")[0] == "abc_123"
     assert name.parseString("abc.def")[0] == "abc.def"
     assert name.parseString("abc::def")[0] == "abc::def"
-
-
-def test_expression():
-    """Test pasing expression."""
-    assert exp.parseString("a + b").asList()[0] == ["a", "+", "b"]
-    assert exp.parseString("a > b").asList()[0] == ["a", ">", "b"]
-    assert exp.parseString("a && b").asList()[0] == ["a", "&&", "b"]
-    assert exp.parseString("a || b").asList()[0] == ["a", "||", "b"]
 
 
 def test_statement():
@@ -46,14 +39,36 @@ def test_statement():
         }
     """
     return_statement = "return a;"
-    stat.ignore(comment)
-    assert len(stat.parseString(assign_statement_1).asList()) == 1
-    assert len(stat.parseString(assign_statement_2).asList()) == 1
-    assert len(stat.parseString(assign_statement_3).asList()) == 1
-    assert len(stat.parseString(if_statement).asList()) == 1
-    assert len(stat.parseString(function_call_statement).asList()) == 1
-    assert len(stat.parseString(function_def_statement).asList()) == 1
-    assert len(stat.parseString(return_statement).asList()) == 1
+    program_parser = getProgramParser(Program())
+    program_parser.ignore(comment)
+    assert (
+        len(program_parser.parseString(assign_statement_1).asDict()["assignment_stat"])
+        == 1
+    )
+    assert (
+        len(program_parser.parseString(assign_statement_2).asDict()["assignment_stat"])
+        == 1
+    )
+    assert (
+        len(program_parser.parseString(assign_statement_3).asDict()["assignment_stat"])
+        == 1
+    )
+    assert len(program_parser.parseString(if_statement).asDict()["if_stat"]) == 1
+    assert (
+        len(
+            program_parser.parseString(function_call_statement).asDict()[
+                "function_call"
+            ]
+        )
+        == 1
+    )
+    assert (
+        len(program_parser.parseString(function_def_statement).asDict()["function_def"])
+        == 1
+    )
+    assert (
+        len(program_parser.parseString(return_statement).asDict()["return_stat"]) == 1
+    )
 
 
 def test_file():
@@ -70,5 +85,6 @@ def test_file():
             Ok(())
         }
     """
-    solana_file.ignore(comment)
-    assert len(solana_file.parseString(file_content)) == 2
+    program_parser = getProgramParser(Program())
+    program_parser.ignore(comment)
+    assert len(program_parser.parseString(file_content).asDict()) == 3

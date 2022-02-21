@@ -1,29 +1,16 @@
 # A proof of concept prototype to use pyparsing to parse common rust pitfalls.
-# Usage: python3 analyzer.py -f FILENAME.
+# Usage: python3 auditor.py -f FILENAME.
 
 from optparse import OptionParser
 from pyparsing import *
+from solaudit.checkers import CHECKERS
+from solaudit.parsers import getProgramParser, comment
+from solaudit.models import Program
 
 
 LBRACK, RBRACK, LBRACE, RBRACE, LPAR, RPAR, EQ, COMMA, SEMI, COLON, QUESTION = map(
     Suppress, "[]{}()=,;:?"
 )
-
-
-def overUnderFlowCheck(content: str) -> None:
-    variable = Word(alphanums)
-    arith_op = oneOf("+ - * /")
-    equation = variable + arith_op + variable
-    equation.ignore(cppStyleComment)
-
-    def printInfo(s: str, loc: int, tokens: ParseResults):
-        print(
-            "Warning: overflow & underflow at line: %d %s"
-            % (lineno(loc, s), line(loc, s))
-        )
-
-    equation.setParseAction(printInfo)
-    equation.searchString(content)
 
 
 def missingSignerCheck(content: str) -> None:
@@ -50,7 +37,11 @@ if __name__ == "__main__":
 
     with open(options.filename, "r") as f:
         content = f.read()
+        program = Program()
 
-        # do checks
-        overUnderFlowCheck(content)
-        missingSignerCheck(content)
+        parser = getProgramParser(program)
+        parser.ignore(comment)
+        parser.parseString(content)
+
+        for checker in CHECKERS:
+            checker(program)
