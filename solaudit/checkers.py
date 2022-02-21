@@ -4,9 +4,9 @@ from solaudit.models import Program
 
 
 def overUnderFlowChecker(program: Program) -> map:
+    exprs = {}
     if len(program.algbra_exprs) > 0:
         print("====== Over/Under flow risk detected at below lines =====")
-        exprs = {}
         for line, expr in program.algbra_exprs.items():
             print("line: %d %s" % (line, expr))
             exprs[line] = expr
