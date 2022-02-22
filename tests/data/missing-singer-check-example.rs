@@ -11,6 +11,11 @@ fn update_admin(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult 
     if admin.pubkey() != config.admin {
         return Err(ProgramError::InvalidAdminAccount);
     }
+
+    // check that the current admin has signed this operation
+    // if !admin.is_signer {
+    //     return Err(ProgramError::MissingSigner);
+    // }
     
     config.admin = new_admin.pubkey();
     
