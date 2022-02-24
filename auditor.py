@@ -1,5 +1,6 @@
 # A proof of concept prototype to use pyparsing to parse common rust pitfalls.
 # Usage: python3 auditor.py -f FILENAME.
+# Example: python3 auditor.py -f tests/data/over-under-flow-example.rs
 
 from optparse import OptionParser
 from pyparsing import *

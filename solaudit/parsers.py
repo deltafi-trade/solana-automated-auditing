@@ -13,10 +13,10 @@ LBRACK, RBRACK, LBRACE, RBRACE, LPAR, RPAR, EQ, COMMA, SEMI, COLON, REF = map(
     pp.Suppress, "[]{}()=,;:&"
 )
 RETURN, IF, ELSE, LET, FN, TRUE, FALSE, RETURN = map(
-    pp.Literal, ["return", "if", "else", "let", "fn", "true", "false", "return"]
+    pp.Suppress, ["return", "if", "else", "let", "fn", "true", "false", "return"]
 )
 AND, OR, NOT, SCOPE_RES = map(pp.Literal, ["&&", "||", "!", "::"])
-OPERATOR = pp.oneOf("+ - * / %")("operator*")
+OPERATOR = pp.oneOf("+ - * / %")
 OPT_SEMI = pp.Optional(SEMI).suppress()
 
 comment = pp.Suppress(pp.Literal("//")) + pp.restOfLine("comment")
@@ -45,9 +45,10 @@ def getProgramParser(program: Program) -> pp.ParserElement:
         [
             ("&", 1, pp.opAssoc.RIGHT),
             (OPERATOR, 2, pp.opAssoc.LEFT, program.handle_algbra_exp),
-            (pp.oneOf("< > <= >= ~= =="), 2, pp.opAssoc.LEFT),
+            (pp.oneOf("< > <= >= ~= == !="), 2, pp.opAssoc.LEFT),
             (AND, 2, pp.opAssoc.LEFT),
             (OR, 2, pp.opAssoc.LEFT),
+            ("?", 1, pp.opAssoc.LEFT),
         ],
     )
 
@@ -58,15 +59,20 @@ def getProgramParser(program: Program) -> pp.ParserElement:
     param_list = pp.delimitedList(param)
 
     func_head = (
-        FN + name + pp.Group(LPAR + param_list + RPAR) + pp.Suppress("->") + type_name
+        FN
+        + name("function_name")
+        + pp.Group(LPAR + param_list + RPAR)
+        + pp.Suppress("->")
+        + type_name
     )
     ok_stat = pp.Literal("Ok(())")
     func_body = LBRACE + block + pp.Optional(ok_stat + OPT_SEMI) + RBRACE
     function_def = func_head + func_body
+    function_def.setParseAction(program.handle_function_def)
 
     assignment_stat = (
         pp.Optional(LET)
-        + var
+        + var("assigned_var*")
         + pp.Optional(pp.Group(COLON + type_name))
         + pp.Optional(OPERATOR)
         + EQ
@@ -74,7 +80,7 @@ def getProgramParser(program: Program) -> pp.ParserElement:
     ).setParseAction(program.handle_assignment_stat)
     if_stat = (
         IF
-        + exp
+        + exp("if_condition*")
         + LBRACE
         + block
         + RBRACE
@@ -85,11 +91,11 @@ def getProgramParser(program: Program) -> pp.ParserElement:
 
     stat <<= (
         assignment_stat("assignment_stat*")
-        | function_call("function_call*")
-        | if_stat("if_stat*")
+        | function_call
+        | if_stat
         | function_def("function_def*")
         | comment
-        | return_stat("return_stat*")
+        | return_stat
     )
 
     solana_file = (stat + OPT_SEMI)[...]
