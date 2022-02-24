@@ -13,21 +13,17 @@ def flatten(x):
 
 
 class Function:
-    name: str
-    input_accounts = []
-    assigned_vars = []
-    if_conditions = []
-
     def __init__(self, name) -> None:
         self.name = name
+        self.input_accounts = []
+        self.assigned_vars = []
+        self.if_conditions = []
 
 
 class Program:
-    name: str
-    algbra_exprs = {}
-    functions = {}
-
     def __init__(self) -> None:
+        self.algbra_exprs = {}
+        self.functions = {}
         pass
 
     def handle_function_def(self, s: str, loc: int, tokens: ParseResults) -> None:
