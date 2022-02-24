@@ -1,10 +1,4 @@
-from pprint import pprint
-from parso import parse
-
-import pytest
 from solaudit.checkers import missingSignerCheckChecker, overUnderFlowChecker
-from solaudit.models import Program
-from solaudit.parsers import getProgramParser, comment
 
 
 class TestCheckers:

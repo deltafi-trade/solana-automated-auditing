@@ -1,6 +1,4 @@
-from pprint import pprint
 from solaudit.parsers import *
-from solaudit.models import Program
 
 
 class TestParser:
