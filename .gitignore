@@ -1,0 +1,7 @@
+**/*.py.bk
+**/*.py.bak
+**/*.rs.bk
+**/*.rs.bak
+*.pyc
+.vscode
+*.patch
