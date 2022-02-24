@@ -35,5 +35,15 @@ def missingSignerCheckChecker(program: Program) -> None:
 
     return func_missing_signer_check
 
+def accountConfusionsChecker(program: Program) -> map:
+    exprs = {}
+    if len(program.pub_exprs) > 0:
+        print("====== Warning: potential account confusions are detected for below struct definitions =====")
+        for line, expr in program.pub_exprs.items():
+            print("line: %d %s" % (line, expr))
+            exprs[line] = expr
+    return exprs
 
-CHECKERS = [overUnderFlowChecker, missingSignerCheckChecker]
+CHECKERS = [overUnderFlowChecker,
+			missingSignerCheckChecker,
+			accountConfusionsChecker]

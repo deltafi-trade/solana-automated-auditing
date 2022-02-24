@@ -21,9 +21,11 @@ class Function:
 
 
 class Program:
+
     def __init__(self) -> None:
         self.algbra_exprs = {}
         self.functions = {}
+        self.pub_exprs = {}
         pass
 
     def handle_function_def(self, s: str, loc: int, tokens: ParseResults) -> None:
@@ -48,3 +50,5 @@ class Program:
         # Handle cases like += -=.
         if "operator" in tokens:
             self.algbra_exprs[lineno(loc, s)] = line(loc, s)
+    def handle_struct_stat(self, s: str, loc: int, tokens: ParseResults) -> None:
+        self.pub_exprs[lineno(loc, s)] = line(loc, s)

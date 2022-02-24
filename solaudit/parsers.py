@@ -18,6 +18,7 @@ RETURN, IF, ELSE, LET, FN, TRUE, FALSE, RETURN = map(
 AND, OR, NOT, SCOPE_RES = map(pp.Literal, ["&&", "||", "!", "::"])
 OPERATOR = pp.oneOf("+ - * / %")
 OPT_SEMI = pp.Optional(SEMI).suppress()
+PUB, STRUCT = map(pp.Literal, ["pub", "struct"])
 
 comment = pp.Suppress(pp.Literal("//")) + pp.restOfLine("comment")
 string = pp.QuotedString("'") | pp.QuotedString('"')
@@ -89,12 +90,38 @@ def getProgramParser(program: Program) -> pp.ParserElement:
     )
     return_stat = RETURN + exp + SEMI
 
+    pubkey_stat = pp.Literal("Pubkey")
+    struct_member_pubkey_expr = (
+        pp.Optional(PUB)
+        + var
+        + pp.Group(COLON + pubkey_stat + COMMA)
+    )
+
+    struct_member_any_expr = (
+        pp.Optional(PUB)
+        + var
+        + pp.Group(COLON + pp.Word(pp.alphanums) + COMMA)
+    )
+
+    struct_stat = (
+        PUB
+        + STRUCT
+        + var
+        + LBRACE
+        + (struct_member_pubkey_expr)
+        + pp.ZeroOrMore(struct_member_pubkey_expr)
+        + pp.ZeroOrMore(struct_member_any_expr)             
+        + RBRACE
+    ).setParseAction(program.handle_struct_stat)
+
     stat <<= (
         assignment_stat("assignment_stat*")
         | function_call("function_call*")
         | if_stat("if_stat*")
         | function_def("function_def*")
+        | comment
         | return_stat("return_stat*")
+        | struct_stat("struct_stat*")
     )
 
     solana_file = (stat + OPT_SEMI)[...]
