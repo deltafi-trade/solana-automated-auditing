@@ -110,7 +110,7 @@ def getProgramParser(program: Program) -> pp.ParserElement:
         + LBRACE
         + (struct_member_pubkey_expr)
         + pp.ZeroOrMore(struct_member_pubkey_expr)
-        + pp.ZeroOrMore(struct_member_any_expr)             
+        + pp.ZeroOrMore(struct_member_any_expr)
         + RBRACE
     ).setParseAction(program.handle_struct_stat)
 
