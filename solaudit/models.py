@@ -11,14 +11,13 @@ def flatten(x):
     else:
         return [x]
 
-
 class Function:
     def __init__(self, name) -> None:
         self.name = name
         self.input_accounts = []
         self.assigned_vars = []
         self.if_conditions = []
-
+        self.rent_accounts = []
 
 class Program:
 
@@ -38,9 +37,12 @@ class Program:
                 right = flatten(stat[1])
                 if "next_account_info" in set(right):
                     func.input_accounts.append(left)
+                    if (left.casefold() == "rent".casefold()):
+                        func.rent_accounts.append(left)
                 else:
                     func.assigned_vars.append(left)
-            func.if_conditions = parse_result["if_condition"]
+            if "if_condition" in parse_result:
+                func.if_conditions.append(parse_result["if_condition"])
         self.functions[function_name] = func
 
     def handle_algbra_exp(self, s: str, loc: int, tokens: ParseResults) -> None:

@@ -46,6 +46,7 @@ def getProgramParser(program: Program) -> pp.ParserElement:
         exp_atom,
         [
             ("&", 1, pp.opAssoc.RIGHT),
+            (NOT, 1, pp.opAssoc.RIGHT),
             (OPERATOR, 2, pp.opAssoc.LEFT, program.handle_algbra_exp),
             (pp.oneOf("< > <= >= ~= == !="), 2, pp.opAssoc.LEFT),
             (AND, 2, pp.opAssoc.LEFT),
@@ -128,7 +129,6 @@ def getProgramParser(program: Program) -> pp.ParserElement:
         | function_call("function_call*")
         | if_stat("if_stat*")
         | function_def("function_def*")
-
         | return_stat("return_stat*")
         | struct_stat("struct_stat*")
     )

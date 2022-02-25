@@ -67,3 +67,21 @@ class TestCheckers:
         parser.parseString(content)
 
         assert len(account_confusions_checker(program)) == 2
+
+
+def test_missing_rent_exempt_checker():
+    content = """
+            fn initialize(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
+
+                let escrow_account = next_account_info(account_info_iter)?;
+                let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
+
+                Ok(())
+            }
+    """
+    program = Program()
+    parser = getProgramParser(program)
+
+    parser.parseString(content)
+
+    assert len(missing_rent_exempt_checker(program)) == 1

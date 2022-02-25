@@ -1,5 +1,6 @@
 """Checkers read data from models and perform semantic & logical checks.."""
 
+from operator import truediv
 from solaudit.models import Program, flatten
 
 
@@ -44,8 +45,25 @@ def account_confusions_checker(program: Program) -> map:
             exprs[line] = expr
     return exprs
 
+def missing_rent_exempt_checker(program: Program) -> None:
+    func_missing_rent_exempt_check = []
+    for name, func in program.functions.items():
+        for account in func.rent_accounts:
+            # check if this rent account has rent exempt check
+            is_rent_exempt_checked = False
+            for if_cond in func.if_conditions:
+                if account + ".is_exempt" in set(flatten(if_cond)):
+                    is_rent_exempt_checked = True
+
+            if not is_rent_exempt_checked:
+                print("Warning: Missing rent exempt check for account '%s' in function %s()!" % (account, name))
+                func_missing_rent_exempt_check.append(name)
+
+    return func_missing_rent_exempt_check
+
 CHECKERS = [
             overUnderFlowChecker,
             missingSignerCheckChecker,
-            account_confusions_checker
+            account_confusions_checker,
+            missing_rent_exempt_checker
            ]
