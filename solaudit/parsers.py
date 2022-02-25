@@ -74,7 +74,7 @@ def getProgramParser(program: Program) -> pp.ParserElement:
         pp.Optional(LET)
         + var("assigned_var*")
         + pp.Optional(pp.Group(COLON + type_name))
-        + pp.Optional(OPERATOR)
+        + pp.Optional(OPERATOR)("operator*")
         + EQ
         + exp
     ).setParseAction(program.handle_assignment_stat)
@@ -91,11 +91,10 @@ def getProgramParser(program: Program) -> pp.ParserElement:
 
     stat <<= (
         assignment_stat("assignment_stat*")
-        | function_call
-        | if_stat
+        | function_call("function_call*")
+        | if_stat("if_stat*")
         | function_def("function_def*")
-        | comment
-        | return_stat
+        | return_stat("return_stat*")
     )
 
     solana_file = (stat + OPT_SEMI)[...]
