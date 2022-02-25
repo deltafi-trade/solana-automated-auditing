@@ -66,4 +66,4 @@ class TestCheckers:
 
         parser.parseString(content)
 
-        assert len(accountConfusionsChecker(program)) == 2
+        assert len(account_confusions_checker(program)) == 2

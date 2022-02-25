@@ -50,5 +50,6 @@ class Program:
         # Handle cases like += -=.
         if "operator" in tokens:
             self.algbra_exprs[lineno(loc, s)] = line(loc, s)
+
     def handle_struct_stat(self, s: str, loc: int, tokens: ParseResults) -> None:
         self.pub_exprs[lineno(loc, s)] = line(loc, s)

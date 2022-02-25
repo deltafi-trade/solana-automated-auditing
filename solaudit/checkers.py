@@ -35,7 +35,7 @@ def missingSignerCheckChecker(program: Program) -> None:
 
     return func_missing_signer_check
 
-def accountConfusionsChecker(program: Program) -> map:
+def account_confusions_checker(program: Program) -> map:
     exprs = {}
     if len(program.pub_exprs) > 1:
         print("====== Warning: potential account confusions are detected for below struct definitions =====")
@@ -44,6 +44,8 @@ def accountConfusionsChecker(program: Program) -> map:
             exprs[line] = expr
     return exprs
 
-CHECKERS = [overUnderFlowChecker,
-		missingSignerCheckChecker,
-		accountConfusionsChecker]
+CHECKERS = [
+            overUnderFlowChecker,
+            missingSignerCheckChecker,
+            account_confusions_checker
+           ]

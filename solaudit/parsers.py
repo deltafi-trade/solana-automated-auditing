@@ -2,6 +2,7 @@
 Parsers are used to parse and extract information from code files and store them into models.
 """
 
+from ctypes import Structure
 import pyparsing as pp
 
 from solaudit.models import Program
@@ -90,6 +91,8 @@ def getProgramParser(program: Program) -> pp.ParserElement:
     )
     return_stat = RETURN + exp + SEMI
 
+    # expression for a PubKey member of struct
+    # e.g. "pub a: PubKey,"
     pubkey_stat = pp.Literal("Pubkey")
     struct_member_pubkey_expr = (
         pp.Optional(PUB)
@@ -97,19 +100,25 @@ def getProgramParser(program: Program) -> pp.ParserElement:
         + pp.Group(COLON + pubkey_stat + COMMA)
     )
 
+    # expression for a struct member of any Type
+    # e.g. "pub amount: u64,"
     struct_member_any_expr = (
         pp.Optional(PUB)
         + var
         + pp.Group(COLON + pp.Word(pp.alphanums) + COMMA)
     )
 
+    # expression for a struct and its first member type is PubKey
+    # e.g.  pub struct admin_info {
+    #           pub admin: PubKey,
+    #           pub amount: u64,
+    #       }
     struct_stat = (
         PUB
         + STRUCT
         + var
         + LBRACE
         + (struct_member_pubkey_expr)
-        + pp.ZeroOrMore(struct_member_pubkey_expr)
         + pp.ZeroOrMore(struct_member_any_expr)
         + RBRACE
     ).setParseAction(program.handle_struct_stat)
