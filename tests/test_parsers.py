@@ -1,6 +1,5 @@
 from solaudit.parsers import *
 
-
 class TestParser:
     def test_comment(self):
         """Test parsing comment."""

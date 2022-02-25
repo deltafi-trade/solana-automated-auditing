@@ -119,7 +119,7 @@ def getProgramParser(program: Program) -> pp.ParserElement:
         | function_call("function_call*")
         | if_stat("if_stat*")
         | function_def("function_def*")
-        | comment
+
         | return_stat("return_stat*")
         | struct_stat("struct_stat*")
     )
