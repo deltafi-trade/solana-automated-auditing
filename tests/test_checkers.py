@@ -1,6 +1,6 @@
 from solaudit.checkers import *
 from solaudit.models import Program
-from solaudit.parsers import getProgramParser
+from solaudit.parsers import getProgramParser, comment
 
 class TestCheckers:
     def test_overUnderFlowChecker(self, program, parser):
@@ -69,19 +69,21 @@ class TestCheckers:
         assert len(account_confusions_checker(program)) == 2
 
 
-def test_missing_rent_exempt_checker():
-    content = """
-            fn initialize(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
+    def test_missing_rent_exempt_checker(self, program, parser):
+        content = """
+                fn initialize(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
 
-                let escrow_account = next_account_info(account_info_iter)?;
-                let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
+                    let escrow_account = next_account_info(account_info_iter)?;
+                    let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
+                //    if !rent.is_exempt(escrow_account.lamports(), escrow_account.data_len()) {
+                //        return Err(EscrowError::NotRentExempt.into());
+                //    }
+                    Ok(())
+                }
+        """
+        program = Program()
+        parser = getProgramParser(program)
+        parser.ignore(comment)
+        parser.parseString(content)
 
-                Ok(())
-            }
-    """
-    program = Program()
-    parser = getProgramParser(program)
-
-    parser.parseString(content)
-
-    assert len(missing_rent_exempt_checker(program)) == 1
+        assert len(missing_rent_exempt_checker(program)) == 1

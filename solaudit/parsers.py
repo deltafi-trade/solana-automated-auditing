@@ -10,8 +10,8 @@ from solaudit.models import Program
 ppc = pp.pyparsing_common
 pp.ParserElement.enablePackrat()
 
-LBRACK, RBRACK, LBRACE, RBRACE, LPAR, RPAR, EQ, COMMA, SEMI, COLON, REF = map(
-    pp.Suppress, "[]{}()=,;:&"
+LBRACK, RBRACK, LBRACE, RBRACE, LPAR, RPAR, EQ, COMMA, SEMI, COLON, REF, DOT = map(
+    pp.Suppress, "[]{}()=,;:&."
 )
 RETURN, IF, ELSE, LET, FN, TRUE, FALSE, RETURN = map(
     pp.Suppress, ["return", "if", "else", "let", "fn", "true", "false", "return"]
@@ -42,11 +42,15 @@ def getProgramParser(program: Program) -> pp.ParserElement:
     var <<= pp.delimitedList(pp.Group(var_atom + index_ref) | var_atom, delim=".")
 
     exp_atom = FALSE | TRUE | ppc.number | string | function_call | var
+
+    # Operator/Expressions with precedence 
+    # e.g. "account.is_signer == TRUE", "!flag", "a == 0", "a == 0 AND b > 2", etc
     exp <<= pp.infixNotation(
         exp_atom,
         [
-            ("&", 1, pp.opAssoc.RIGHT),
+            (DOT, 1, pp.opAssoc.RIGHT),
             (NOT, 1, pp.opAssoc.RIGHT),
+            ("&", 1, pp.opAssoc.RIGHT),
             (OPERATOR, 2, pp.opAssoc.LEFT, program.handle_algbra_exp),
             (pp.oneOf("< > <= >= ~= == !="), 2, pp.opAssoc.LEFT),
             (AND, 2, pp.opAssoc.LEFT),
