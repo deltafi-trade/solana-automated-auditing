@@ -1,6 +1,5 @@
 from solaudit.checkers import *
-from solaudit.models import Program
-from solaudit.parsers import getProgramParser, comment
+
 
 class TestCheckers:
     def test_overUnderFlowChecker(self, program, parser):
@@ -65,7 +64,6 @@ class TestCheckers:
 
         assert len(account_confusions_checker(program)) == 2
 
-
     def test_missing_rent_exempt_checker(self, program, parser):
         content = """
                 fn initialize(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
@@ -78,8 +76,35 @@ class TestCheckers:
                     Ok(())
                 }
         """
-
-        parser.ignore(comment)
         parser.parseString(content)
 
         assert len(missing_rent_exempt_checker(program)) == 1
+
+    def test_missing_ownership_checker(self, program, parser):
+        content = """
+            fn withdraw_token_restricted(program_id: &Pubkey, accounts: &[AccountInfo], amount: u64) -> ProgramResult {
+                let account_iter = &mut accounts.iter();
+                let vault = next_account_info(account_iter)?;
+                let admin = next_account_info(account_iter)?;
+                let config = ConfigAccount::unpack(next_account_info(account_iter)?)?;
+                let vault_authority = next_account_info(account_iter)?;
+                
+                
+                if config.admin != admin.pubkey() {
+                    return Err(ProgramError::InvalidAdminAccount);
+                }
+
+                // if config.owner != program_id {
+                //     return Err(ProgramError::InvalidConfigAccount);
+                // }
+                
+                // ...
+                // Transfer funds from vault to admin using vault_authority
+                // ...
+                
+                Ok(())
+            }
+        """
+        parser.parseString(content)
+
+        assert len(missing_ownership_checker(program)) == 1

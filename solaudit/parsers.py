@@ -2,7 +2,6 @@
 Parsers are used to parse and extract information from code files and store them into models.
 """
 
-from ctypes import Structure
 import pyparsing as pp
 
 from solaudit.models import Program
@@ -27,7 +26,7 @@ string = pp.QuotedString("'") | pp.QuotedString('"')
 any_keyword = pp.MatchFirst(RETURN | IF | LET | FN).setName("<keyword>")
 ident = ~any_keyword + ppc.identifier
 name = pp.delimitedList(ident, delim=pp.Literal(".") | SCOPE_RES, combine=True)
-type_name = pp.Optional("&") + pp.Optional("[") + name + pp.Optional("]")
+type_name = pp.Group(pp.Optional("&") + pp.Optional("[") + name + pp.Optional("]"))
 
 
 def getProgramParser(program: Program) -> pp.ParserElement:
@@ -43,7 +42,7 @@ def getProgramParser(program: Program) -> pp.ParserElement:
 
     exp_atom = FALSE | TRUE | ppc.number | string | function_call | var
 
-    # Operator/Expressions with precedence 
+    # Operator/Expressions with precedence
     # e.g. "account.is_signer == TRUE", "!flag", "a == 0", "a == 0 AND b > 2", etc
     exp <<= pp.infixNotation(
         exp_atom,
@@ -68,7 +67,9 @@ def getProgramParser(program: Program) -> pp.ParserElement:
     func_head = (
         FN
         + name("function_name")
-        + pp.Group(LPAR + param_list + RPAR)
+        + LPAR
+        + param_list("function_parameters")
+        + RPAR
         + pp.Suppress("->")
         + type_name
     )
@@ -100,17 +101,13 @@ def getProgramParser(program: Program) -> pp.ParserElement:
     # e.g. "pub a: PubKey,"
     pubkey_stat = pp.Literal("Pubkey")
     struct_member_pubkey_expr = (
-        pp.Optional(PUB)
-        + var
-        + pp.Group(COLON + pubkey_stat + COMMA)
+        pp.Optional(PUB) + var + pp.Group(COLON + pubkey_stat + COMMA)
     )
 
     # expression for a struct member of any Type
     # e.g. "pub amount: u64,"
     struct_member_any_expr = (
-        pp.Optional(PUB)
-        + var
-        + pp.Group(COLON + pp.Word(pp.alphanums) + COMMA)
+        pp.Optional(PUB) + var + pp.Group(COLON + pp.Word(pp.alphanums) + COMMA)
     )
 
     # expression for a struct and its first member type is PubKey
