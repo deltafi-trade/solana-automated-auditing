@@ -61,9 +61,6 @@ class TestCheckers:
                 pub balance: u64,
             }
         """
-        program = Program()
-        parser = getProgramParser(program)
-
         parser.parseString(content)
 
         assert len(account_confusions_checker(program)) == 2
@@ -81,8 +78,7 @@ class TestCheckers:
                     Ok(())
                 }
         """
-        program = Program()
-        parser = getProgramParser(program)
+
         parser.ignore(comment)
         parser.parseString(content)
 

@@ -1,6 +1,5 @@
 """Checkers read data from models and perform semantic & logical checks.."""
 
-from operator import truediv
 from solaudit.models import Program, flatten
 
 
