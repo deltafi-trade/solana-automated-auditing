@@ -1,5 +1,6 @@
-from solaudit.checkers import missingSignerCheckChecker, overUnderFlowChecker
-
+from solaudit.checkers import *
+from solaudit.models import Program
+from solaudit.parsers import getProgramParser
 
 class TestCheckers:
     def test_overUnderFlowChecker(self, program, parser):
@@ -43,3 +44,26 @@ class TestCheckers:
         """
         parser.parseString(content)
         assert len(missingSignerCheckChecker(program)) == 1
+
+    def test_accountConfusionsChecker(self, program, parser):
+        content = """
+            pub struct Config {
+                pub admin: Pubkey,
+                pub fee: u64,
+            }
+            
+            pub struct User {
+                pub userauthority: Pubkey,
+                pub balance: u64,
+            }
+            pub struct Info {
+                pub state: u8,
+                pub balance: u64,
+            }
+        """
+        program = Program()
+        parser = getProgramParser(program)
+
+        parser.parseString(content)
+
+        assert len(account_confusions_checker(program)) == 2
