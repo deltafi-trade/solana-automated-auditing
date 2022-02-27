@@ -11,6 +11,7 @@ def flatten(x):
     else:
         return [x]
 
+
 class Function:
     def __init__(self, name) -> None:
         self.name = name
@@ -18,9 +19,10 @@ class Function:
         self.assigned_vars = []
         self.if_conditions = []
         self.rent_accounts = []
+        self.invoked_calls = []
+
 
 class Program:
-
     def __init__(self) -> None:
         self.algbra_exprs = {}
         self.functions = {}
@@ -34,15 +36,24 @@ class Program:
         if "assignment_stat" in parse_result:
             for stat in parse_result["assignment_stat"]:
                 left = stat[0]
-                right = flatten(stat[1])
+                right = flatten(stat[1:])
                 if "next_account_info" in set(right):
                     func.input_accounts.append(left)
-                    if (left.casefold() == "rent".casefold()):
+                    if left.casefold() == "rent".casefold():
                         func.rent_accounts.append(left)
                 else:
                     func.assigned_vars.append(left)
             if "if_condition" in parse_result:
                 func.if_conditions.append(parse_result["if_condition"])
+
+        if "function_call" in parse_result:
+            for fc in parse_result["function_call"]:
+                func_name = fc[0]
+                if func_name == "invoke_signed":
+                    param_list = flatten(fc[1:])
+                    program_name = param_list[0].split("::")[0]
+                    func.invoked_calls.append(program_name)
+
         self.functions[function_name] = func
 
     def handle_algbra_exp(self, s: str, loc: int, tokens: ParseResults) -> None:

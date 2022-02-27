@@ -10,11 +10,23 @@ from solaudit.models import Program
 ppc = pp.pyparsing_common
 pp.ParserElement.enablePackrat()
 
-LBRACK, RBRACK, LBRACE, RBRACE, LPAR, RPAR, EQ, COMMA, SEMI, COLON, REF, DOT = map(
-    pp.Suppress, "[]{}()=,;:&."
-)
-RETURN, IF, ELSE, LET, FN, TRUE, FALSE, RETURN = map(
-    pp.Suppress, ["return", "if", "else", "let", "fn", "true", "false", "return"]
+(
+    LBRACK,
+    RBRACK,
+    LBRACE,
+    RBRACE,
+    LPAR,
+    RPAR,
+    EQ,
+    COMMA,
+    SEMI,
+    COLON,
+    BORROW,
+    DOT,
+    QUESTION,
+) = map(pp.Suppress, "[]{}()=,;:&.?")
+RETURN, IF, ELSE, LET, FN, TRUE, FALSE = map(
+    pp.Suppress, ["return", "if", "else", "let", "fn", "true", "false"]
 )
 AND, OR, NOT, SCOPE_RES = map(pp.Literal, ["&&", "||", "!", "::"])
 OPERATOR = pp.oneOf("+ - * / %")
@@ -32,30 +44,36 @@ type_name = pp.Optional("&") + pp.Optional("[") + name + pp.Optional("]")
 
 def getProgramParser(program: Program) -> pp.ParserElement:
     exp = pp.Forward()
-    exp_list = pp.delimitedList(exp)
+    exp_list = pp.delimitedList(exp) + pp.Optional(COMMA)
 
-    function_call = name + pp.Group(LPAR + pp.Optional(exp_list) + RPAR)
+    function_call = (
+        pp.Optional(PUB)
+        + name
+        + pp.Group(LPAR + pp.Optional(exp_list) + RPAR)
+        + pp.Optional(QUESTION)
+    )
 
     var = pp.Forward()
-    var_atom = function_call | name | LPAR + exp + RPAR
+    var_atom = (
+        function_call | name | LPAR + exp_list + RPAR | LBRACK + exp_list + RBRACK
+    )
     index_ref = pp.Group(LBRACK + exp + RBRACK)
     var <<= pp.delimitedList(pp.Group(var_atom + index_ref) | var_atom, delim=".")
 
     exp_atom = FALSE | TRUE | ppc.number | string | function_call | var
 
-    # Operator/Expressions with precedence 
+    # Operator/Expressions with precedence
     # e.g. "account.is_signer == TRUE", "!flag", "a == 0", "a == 0 AND b > 2", etc
     exp <<= pp.infixNotation(
         exp_atom,
         [
             (DOT, 1, pp.opAssoc.RIGHT),
             (NOT, 1, pp.opAssoc.RIGHT),
-            ("&", 1, pp.opAssoc.RIGHT),
+            (BORROW, 1, pp.opAssoc.RIGHT),
             (OPERATOR, 2, pp.opAssoc.LEFT, program.handle_algbra_exp),
             (pp.oneOf("< > <= >= ~= == !="), 2, pp.opAssoc.LEFT),
             (AND, 2, pp.opAssoc.LEFT),
             (OR, 2, pp.opAssoc.LEFT),
-            ("?", 1, pp.opAssoc.LEFT),
         ],
     )
 
@@ -66,7 +84,8 @@ def getProgramParser(program: Program) -> pp.ParserElement:
     param_list = pp.delimitedList(param)
 
     func_head = (
-        FN
+        pp.Optional(PUB)
+        + FN
         + name("function_name")
         + pp.Group(LPAR + param_list + RPAR)
         + pp.Suppress("->")
@@ -100,17 +119,13 @@ def getProgramParser(program: Program) -> pp.ParserElement:
     # e.g. "pub a: PubKey,"
     pubkey_stat = pp.Literal("Pubkey")
     struct_member_pubkey_expr = (
-        pp.Optional(PUB)
-        + var
-        + pp.Group(COLON + pubkey_stat + COMMA)
+        pp.Optional(PUB) + var + pp.Group(COLON + pubkey_stat + COMMA)
     )
 
     # expression for a struct member of any Type
     # e.g. "pub amount: u64,"
     struct_member_any_expr = (
-        pp.Optional(PUB)
-        + var
-        + pp.Group(COLON + pp.Word(pp.alphanums) + COMMA)
+        pp.Optional(PUB) + var + pp.Group(COLON + pp.Word(pp.alphanums) + COMMA)
     )
 
     # expression for a struct and its first member type is PubKey
