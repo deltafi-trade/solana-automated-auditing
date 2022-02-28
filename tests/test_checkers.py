@@ -2,8 +2,9 @@ from solaudit.checkers import *
 from solaudit.models import Program
 from solaudit.parsers import getProgramParser, comment
 
+
 class TestCheckers:
-    def test_overUnderFlowChecker(self, program, parser):
+    def test_over_under_flow_checker(self, program, parser):
         content = """
             fn test(a: u32, b: u32) -> u32 {
                 if a + b > 0 {
@@ -14,7 +15,7 @@ class TestCheckers:
             }
         """
         parser.parseString(content)
-        assert len(overUnderFlowChecker(program)) == 2
+        assert len(over_under_flow_checker(program)) == 2
 
     def test_missingSingerCheckChecker(self, program, parser):
         content = """
@@ -43,7 +44,7 @@ class TestCheckers:
             }
         """
         parser.parseString(content)
-        assert len(missingSignerCheckChecker(program)) == 1
+        assert len(missing_signer_check_checker(program)) == 1
 
     def test_accountConfusionsChecker(self, program, parser):
         content = """
@@ -64,7 +65,6 @@ class TestCheckers:
         parser.parseString(content)
 
         assert len(account_confusions_checker(program)) == 2
-
 
     def test_missing_rent_exempt_checker(self, program, parser):
         content = """

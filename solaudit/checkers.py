@@ -3,7 +3,7 @@
 from solaudit.models import Program, flatten
 
 
-def overUnderFlowChecker(program: Program) -> map:
+def over_under_flow_checker(program: Program) -> map:
     exprs = {}
     if len(program.algbra_exprs) > 0:
         print("====== Over/Under flow risk detected at below lines =====")
@@ -13,7 +13,7 @@ def overUnderFlowChecker(program: Program) -> map:
     return exprs
 
 
-def missingSignerCheckChecker(program: Program) -> None:
+def missing_signer_check_checker(program: Program) -> None:
     func_missing_signer_check = []
     for name, func in program.functions.items():
         is_writting_accounts = False
@@ -35,14 +35,18 @@ def missingSignerCheckChecker(program: Program) -> None:
 
     return func_missing_signer_check
 
+
 def account_confusions_checker(program: Program) -> map:
     exprs = {}
     if len(program.pub_exprs) > 1:
-        print("====== Warning: potential account confusions are detected for below struct definitions =====")
+        print(
+            "====== Warning: potential account confusions are detected for below struct definitions ====="
+        )
         for line, expr in program.pub_exprs.items():
             print("line: %d %s" % (line, expr))
             exprs[line] = expr
     return exprs
+
 
 def missing_rent_exempt_checker(program: Program) -> None:
     func_missing_rent_exempt_check = []
@@ -55,14 +59,18 @@ def missing_rent_exempt_checker(program: Program) -> None:
                     is_rent_exempt_checked = True
 
             if not is_rent_exempt_checked:
-                print("Warning: Missing rent exempt check for account '%s' in function %s()!" % (account, name))
+                print(
+                    "Warning: Missing rent exempt check for account '%s' in function %s()!"
+                    % (account, name)
+                )
                 func_missing_rent_exempt_check.append(name)
 
     return func_missing_rent_exempt_check
 
+
 CHECKERS = [
-            overUnderFlowChecker,
-            missingSignerCheckChecker,
-            account_confusions_checker,
-            missing_rent_exempt_checker
-           ]
+    over_under_flow_checker,
+    missing_signer_check_checker,
+    account_confusions_checker,
+    missing_rent_exempt_checker,
+]
