@@ -71,23 +71,22 @@ def missing_rent_exempt_checker(program: Program) -> None:
 def missing_ownership_checker(program: Program) -> None:
     func_missing_ownership_check = []
     for name, func in program.functions.items():
-        print(func.parameters)
-        for account in func.config_accounts:
-            is_ownership_checked = False
-            for if_cond in func.if_conditions:
-                if "&Pubkey" in func.parameters:
-                    program_id = func.parameters["&Pubkey"]
+        if "&Pubkey" in func.parameters:
+            program_id = func.parameters["&Pubkey"]
+            for account in func.writing_accounts:
+                is_ownership_checked = False
+                for if_cond in func.if_conditions:
                     if account + ".owner != " + program_id in " ".join(
                         flatten(if_cond)
                     ):
                         is_ownership_checked = True
 
-            if not is_ownership_checked:
-                print(
-                    "Warning: Missing ownership check for account '%s' in function %s()!"
-                    % (account, name)
-                )
-                func_missing_ownership_check.append(name)
+                if not is_ownership_checked:
+                    print(
+                        "Warning: Missing ownership check for account '%s' in function %s()!"
+                        % (account, name)
+                    )
+                    func_missing_ownership_check.append(name)
 
     return func_missing_ownership_check
 

@@ -12,8 +12,8 @@ pp.ParserElement.enablePackrat()
 LBRACK, RBRACK, LBRACE, RBRACE, LPAR, RPAR, EQ, COMMA, SEMI, COLON, REF, DOT = map(
     pp.Suppress, "[]{}()=,;:&."
 )
-RETURN, IF, ELSE, LET, FN, TRUE, FALSE, RETURN = map(
-    pp.Suppress, ["return", "if", "else", "let", "fn", "true", "false", "return"]
+RETURN, IF, ELSE, LET, FN, TRUE, FALSE, RETURN, MUT = map(
+    pp.Suppress, ["return", "if", "else", "let", "fn", "true", "false", "return", "mut"]
 )
 AND, OR, NOT, SCOPE_RES = map(pp.Literal, ["&&", "||", "!", "::"])
 OPERATOR = pp.oneOf("+ - * / %")
@@ -80,6 +80,7 @@ def getProgramParser(program: Program) -> pp.ParserElement:
 
     assignment_stat = (
         pp.Optional(LET)
+        + pp.Optional(MUT)
         + var("assigned_var*")
         + pp.Optional(pp.Group(COLON + type_name))
         + pp.Optional(OPERATOR)("operator*")

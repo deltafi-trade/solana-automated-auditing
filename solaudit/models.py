@@ -19,7 +19,7 @@ class Function:
         self.assigned_vars = []
         self.if_conditions = []
         self.rent_accounts = []
-        self.config_accounts = []
+        self.writing_accounts = []
         self.parameters = {}
 
 
@@ -38,15 +38,17 @@ class Program:
             if "assignment_stat" in parse_result:
                 for stat in parse_result["assignment_stat"]:
                     left = stat[0]
-                    right = flatten(stat[1])
+                    right = flatten(stat[1:])
                     if "next_account_info" in set(right):
                         func.input_accounts.append(left)
                         if left.casefold() == "rent".casefold():
                             func.rent_accounts.append(left)
-                        elif left.casefold() == "config".casefold():
-                            func.config_accounts.append(left)
                     else:
                         func.assigned_vars.append(left)
+
+                    for token in right:
+                        if "unpack" in str(token):
+                            func.writing_accounts.append(left)
 
             if "if_condition" in parse_result:
                 func.if_conditions.append(parse_result["if_condition"])

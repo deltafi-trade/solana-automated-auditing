@@ -89,7 +89,6 @@ class TestCheckers:
                 let config = ConfigAccount::unpack(next_account_info(account_iter)?)?;
                 let vault_authority = next_account_info(account_iter)?;
                 
-                
                 if config.admin != admin.pubkey() {
                     return Err(ProgramError::InvalidAdminAccount);
                 }
@@ -101,10 +100,14 @@ class TestCheckers:
                 // ...
                 // Transfer funds from vault to admin using vault_authority
                 // ...
+
+                let mut token_swap = SwapInfo::unpack(&swap_info.data.borrow())?;
+                // Do some token swap
+
                 
                 Ok(())
             }
         """
         parser.parseString(content)
 
-        assert len(missing_ownership_checker(program)) == 1
+        assert len(missing_ownership_checker(program)) == 2
