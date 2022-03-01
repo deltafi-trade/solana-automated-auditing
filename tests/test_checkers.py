@@ -121,6 +121,24 @@ class TestCheckers:
                     &[&seeds],
                 )?;
 
+                invoke_optionally_signed(
+                    &spl_token1::instruction::transfer(
+                        &token_program.key,
+                        &vault.key,
+                        &destination.key,
+                        &vault_authority.key,
+                        &[&vault_authority.key],
+                        amount,
+                    )?,
+                    &[
+                        vault.clone(),
+                        destination.clone(),
+                        vault_owner_info.clone(),
+                        token_program.clone(),
+                    ],
+                    &[&seeds],
+                )?;
+
 
                 Ok(())
             }
@@ -129,4 +147,4 @@ class TestCheckers:
         parser.ignore(comment)
         parser.parseString(content)
 
-        assert len(arbitrary_signed_program_invocation_checker(program)) == 1
+        assert len(arbitrary_signed_program_invocation_checker(program)) == 2

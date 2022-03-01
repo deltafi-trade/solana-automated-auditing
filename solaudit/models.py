@@ -2,6 +2,7 @@
 Models are used for store informations exracted by parser.
 """
 
+from pprint import pprint
 from pyparsing import ParseResults, lineno, line
 
 
@@ -47,9 +48,10 @@ class Program:
                 func.if_conditions.append(parse_result["if_condition"])
 
         if "function_call" in parse_result:
+            pprint(parse_result["function_call"])
             for fc in parse_result["function_call"]:
                 func_name = fc[0]
-                if func_name == "invoke_signed":
+                if "invoke" in func_name and "signed" in func_name:
                     param_list = flatten(fc[1:])
                     program_name = param_list[0].split("::")[0]
                     func.invoked_calls.append(program_name)
