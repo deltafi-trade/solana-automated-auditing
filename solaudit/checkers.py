@@ -35,14 +35,18 @@ def missingSignerCheckChecker(program: Program) -> None:
 
     return func_missing_signer_check
 
+
 def account_confusions_checker(program: Program) -> map:
     exprs = {}
     if len(program.pub_exprs) > 1:
-        print("====== Warning: potential account confusions are detected for below struct definitions =====")
+        print(
+            "====== Warning: potential account confusions are detected for below struct definitions ====="
+        )
         for line, expr in program.pub_exprs.items():
             print("line: %d %s" % (line, expr))
             exprs[line] = expr
     return exprs
+
 
 def missing_rent_exempt_checker(program: Program) -> None:
     func_missing_rent_exempt_check = []
@@ -55,14 +59,42 @@ def missing_rent_exempt_checker(program: Program) -> None:
                     is_rent_exempt_checked = True
 
             if not is_rent_exempt_checked:
-                print("Warning: Missing rent exempt check for account '%s' in function %s()!" % (account, name))
+                print(
+                    "Warning: Missing rent exempt check for account '%s' in function %s()!"
+                    % (account, name)
+                )
                 func_missing_rent_exempt_check.append(name)
 
     return func_missing_rent_exempt_check
 
+
+def missing_ownership_checker(program: Program) -> None:
+    func_missing_ownership_check = []
+    for name, func in program.functions.items():
+        if "&Pubkey" in func.parameters:
+            program_id = func.parameters["&Pubkey"]
+            for account in func.writing_accounts:
+                is_ownership_checked = False
+                for if_cond in func.if_conditions:
+                    if account + ".owner != " + program_id in " ".join(
+                        flatten(if_cond)
+                    ):
+                        is_ownership_checked = True
+
+                if not is_ownership_checked:
+                    print(
+                        "Warning: Missing ownership check for account '%s' in function %s()!"
+                        % (account, name)
+                    )
+                    func_missing_ownership_check.append(name)
+
+    return func_missing_ownership_check
+
+
 CHECKERS = [
-            overUnderFlowChecker,
-            missingSignerCheckChecker,
-            account_confusions_checker,
-            missing_rent_exempt_checker
-           ]
+    overUnderFlowChecker,
+    missingSignerCheckChecker,
+    account_confusions_checker,
+    missing_rent_exempt_checker,
+    missing_ownership_checker,
+]
